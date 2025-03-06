@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "Command.h"
+// #include "erclearror.h"
 #include "error.h"
 
 typedef struct {

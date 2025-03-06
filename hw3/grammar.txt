@@ -11,15 +11,13 @@ pipeline ::=
 
 command ::=
     words redir
-    ( sequence ) redir      # CS 552 only
-    { sequence } redir      # CS 552 only
 
 words ::=
     word
     words word
 
 redir ::=
-    ^                       # empty
+                            # empty character
     < word
     > word
     < word > word
