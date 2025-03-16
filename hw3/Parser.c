@@ -26,22 +26,81 @@ static T_redir p_redir();
 
 static T_redir p_redir()
 {
+
+  // Creating redir to be returned
+  T_redir redir = new_redir();
+
   // What is the first character?
   // Ex: "", <, >
   char *dir = curr();
-  if (!dir)
+  if (!dir || !(cmp("<") && cmp(">")))
   {
-    // There is nothing for the redirection to do
+    // There is nothing for the redirection to do, just create an empty char redir
+    // redir->dir1 = strdup("");
+
+    // ? Possibly NULL other elements?
+
+    // return redir;
+
+    // Could just be returning 0
     return 0;
   }
 
   // Creating the new redir struct and saving the redirection
-  T_redir redir = new_redir();
-  redir->dir = strdup(dir);
+  redir->dir1 = strdup(dir);
 
-  // Continue
-
+  // Next token ([<, >] ==> word)
   next();
+
+  // Creating the word section
+  T_word word1 = p_word();
+
+  // Unsuccessful call?
+  if (word1->s == (int *)0)
+  {
+    // There is no word.
+    // ? This should not be possible? (not syntactically valid)
+
+    // ? Maybe we just NULL whole element?
+    // redir = NULL;
+    // return redir;
+
+    // Could just be returning 0
+    return 0;
+  }
+
+  // Word exists (Yay!)
+  redir->word1 = word1;
+
+  // Possible next section? ([<, > ==> word] ==>? [<, > ==> words])
+  next();
+  if (!dir || !(cmp("<") && cmp(">")))
+  {
+    // There is no additional redirection
+    // NULL out the last elements
+    redir->dir2 = NULL;
+    redir->word2 = NULL;
+    return redir;
+  }
+
+  T_word word2 = p_word();
+
+  // Unsuccessful call?
+  if (word2->s == (int *)0)
+  {
+    // There is no word.
+    // ? This should not be possible? (not syntactically valid)
+
+    // ? Maybe we just NULL whole element?
+    // redir = NULL;
+    // return redir;
+
+    // Could just be returning 0
+    return 0;
+  }
+
+  // Presumably, the redir is valid and will be sent back
+  return redir;
 }
 
 static T_word p_word()
@@ -74,8 +133,18 @@ static T_command p_command()
   words = p_words();
   if (!words)
     return 0;
+
+  // Implementing redir to comand
+  T_redir redir = 0;
+  redir = p_redir();
+  if (!redir)
+    return 0;
+
+  // Now creating the command, (All elements are there!)
   T_command command = new_command();
   command->words = words;
+  command->redir = redir;
+
   return command;
 }
 
@@ -176,10 +245,15 @@ static void f_sequence(T_sequence t)
 
 static void f_redir(T_redir t)
 {
+  // NEED TO CHECK AND MAKE SURE IT WORKS
   if (!t)
     return;
-
-  // Continue
+  f_word(t->word1);
+  if (t->word2 != (void *)0)
+  {
+    f_word(t->word2);
+  }
+  free(t)
 }
 
 extern void freeTree(Tree t)
