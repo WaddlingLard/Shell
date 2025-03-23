@@ -11,36 +11,45 @@
 #include "Interpreter.h"
 #include "error.h"
 
-int main() {
-  int eof=0;
-  Jobs jobs=newJobs();
-  char *prompt=0;
+int main()
+{
+  int eof = 0;
+  Jobs jobs = newJobs();
+  char *prompt = 0;
 
-  if (isatty(fileno(stdin))) {
+  if (isatty(fileno(stdin)))
+  {
     using_history();
     read_history(".history");
-    prompt="$ ";
-  } else {
-    rl_bind_key('\t',rl_insert);
-    rl_outstream=fopen("/dev/null","w");
+    prompt = "$ ";
   }
-  
-  while (!eof) {
-    char *line=readline(prompt);
+  else
+  {
+    rl_bind_key('\t', rl_insert);
+    rl_outstream = fopen("/dev/null", "w");
+  }
+
+  while (!eof)
+  {
+    char *line = readline(prompt);
+    fprintf(stdout, "%s\n", line);
     if (!line)
       break;
     if (*line)
       add_history(line);
-    Tree tree=parseTree(line);
+    Tree tree = parseTree(line);
     free(line);
-    interpretTree(tree,&eof,jobs);
+    interpretTree(tree, &eof, jobs);
     freeTree(tree);
   }
 
-  if (isatty(fileno(stdin))) {
+  if (isatty(fileno(stdin)))
+  {
     write_history(".history");
     rl_clear_history();
-  } else {
+  }
+  else
+  {
     fclose(rl_outstream);
   }
   freestateCommand();
