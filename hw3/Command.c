@@ -74,20 +74,26 @@ BIDEFN(cd)
 
     char *readyWD;
 
-    // Is there a current working directory?
-    if (!currentWD)
-    {
-      // Need to adjust it
-      readyWD = getcwd(0, 0);
-    }
-
     if (oldWD)
       free(oldWD);
     oldWD = currentWD;
 
+    // Is there a current working directory?
+    // ? Important to check after so you don't get new stuff (I believe)
+    if (!currentWD)
+    {
+      // Need to adjust it
+      // readyWD = getcwd(0, 0);
+      currentWD = getcwd(0, 0);
+    }
+
     // Appending file onto the current path
-    readyWD = strcat(readyWD, "/");
-    currentWD = strcat(readyWD, strdup(r->argv[1]));
+    // readyWD = strcat(readyWD, "/");
+    // currentWD = strcat(readyWD, strdup("/"));
+    currentWD = strcat(currentWD, strdup("/"));
+    currentWD = strcat(currentWD, strdup(r->argv[1]));
+
+    fprintf(stdout, "Current working directory: %s\n", currentWD);
   }
   if (currentWD && chdir(currentWD))
   {
@@ -237,13 +243,18 @@ extern void freeCommand(Command command)
 {
   CommandRep r = command;
   char **argv = r->argv;
-  fprintf(stdout, "%ld\n", sizeof(argv));
+  // fprintf(stdout, "%ld\n", sizeof(argv));
   while (*argv)
   {
+    // What argument is it freeing?
+    fprintf(stdout, "%s\n", *argv);
+    
     free(*argv++);
   }
   free(r->argv);
   free(r);
+
+  fprintf(stdout, "Command has been freed!\n");
 }
 
 extern void freestateCommand()
