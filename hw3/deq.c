@@ -4,6 +4,7 @@
 
 #include "deq.h"
 #include "error.h"
+#include "Command.h"
 
 // indices and size of array of node pointers
 typedef enum
@@ -177,7 +178,8 @@ static Data rem(Rep r, End e, Data d)
   {
 
     // Have to use '==' comparison on dereferenced values
-    if (*(char *)pulled == *(char *)d)
+    // if (*(char *)pulled == *(char *)d)
+    if (pulled == d)
     {
       remove = current;
       // printf("Found a match!");
@@ -297,7 +299,11 @@ extern Data deq_tail_rem(Deq q, Data d) { return rem(rep(q), Tail, d); }
 extern void deq_map(Deq q, DeqMapF f)
 {
   for (Node n = rep(q)->ht[Head]; n; n = n->np[Tail])
+  {
+    fprintf(stdout, "Size of Deq: %d\n", deq_len(q));
+    // fprintf(stdout, "Data: %s\n",(char *)n->data);
     f(n->data);
+  }
 }
 
 extern void deq_del(Deq q, DeqMapF f)
