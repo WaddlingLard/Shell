@@ -3,6 +3,10 @@
 #include <unistd.h>
 #include <string.h>
 
+// Used for managing child processes
+#include <sys/types.h>
+#include <sys/wait.h>
+
 #include "Command.h"
 // #include "erclearror.h"
 #include "error.h"
@@ -18,8 +22,9 @@ typedef struct
 #define BIDEFN(name) static void BINAME(name)(BIARGS)
 #define BIENTRY(name) {#name, BINAME(name)}
 
+// Unsure what the o is in wd
 static char *owd = 0;
-static char *cwd = 0;
+static char *currentWD = 0;
 
 static void builtin_args(CommandRep r, int n)
 {
@@ -42,9 +47,9 @@ BIDEFN(pwd)
 {
   printf("pwd!");
   builtin_args(r, 0);
-  if (!cwd)
-    cwd = getcwd(0, 0);
-  printf("%s\n", cwd);
+  if (!currentWD)
+    currentWD = getcwd(0, 0);
+  printf("%s\n", currentWD);
 }
 
 BIDEFN(cd)
@@ -53,18 +58,18 @@ BIDEFN(cd)
   builtin_args(r, 1);
   if (strcmp(r->argv[1], "-") == 0)
   {
-    char *twd = cwd;
-    cwd = owd;
+    char *twd = currentWD;
+    currentWD = owd;
     owd = twd;
   }
   else
   {
     if (owd)
       free(owd);
-    owd = cwd;
-    cwd = strdup(r->argv[1]);
+    owd = currentWD;
+    currentWD = strdup(r->argv[1]);
   }
-  if (cwd && chdir(cwd))
+  if (currentWD && chdir(currentWD))
     ERROR("chdir() failed"); // warn
 }
 
@@ -128,9 +133,20 @@ static void child(CommandRep r, int fg)
   int eof = 0;
   Jobs jobs = newJobs();
   if (builtin(r, &eof, jobs))
-    return;
+  {
+    // Should not be possible, child processes only execute on commands not builtin
+    fprintf(stderr, "CHild is builtin\n");
+
+    // ? Maybe?
+    exit(-1);
+
+    // return;
+  }
   execvp(r->argv[0], r->argv);
   ERROR("execvp() failed");
+
+  // fprintf(stdout, "Child process complete!\n");
+
   exit(0);
 }
 
@@ -145,11 +161,27 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     *jobbed = 1;
     addJobs(jobs, pipeline);
   }
+
+  // Forks the process because the command is not build int but is rather built into bash itself
   int pid = fork();
   if (pid == -1)
     ERROR("fork() failed");
   if (pid == 0)
+  {
+    // Child process
+    fprintf(stdout, "Child process is running!\n");
     child(r, fg);
+  }
+  else
+  {
+    // Parent process
+    // fprintf(stdout, "Parent (PID: %d) creating child (PID: %d)...\n", getpid(), pid);
+
+    // Wait for the child to finish
+    wait(pid);
+
+    // fprintf(stdout, "Child process completed!\n");
+  }
 }
 
 extern void freeCommand(Command command)
@@ -164,8 +196,8 @@ extern void freeCommand(Command command)
 
 extern void freestateCommand()
 {
-  if (cwd)
-    free(cwd);
+  if (currentWD)
+    free(currentWD);
   if (owd)
     free(owd);
 }
