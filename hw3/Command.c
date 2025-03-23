@@ -186,11 +186,14 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
   }
   else
   {
+
+    int *pidProcess = &pid;
+
     // Parent process
     // fprintf(stdout, "Parent (PID: %d) creating child (PID: %d)...\n", getpid(), pid);
 
     // Wait for the child to finish
-    wait(pid);
+    wait(pidProcess);
 
     // fprintf(stdout, "Child process completed!\n");
   }
