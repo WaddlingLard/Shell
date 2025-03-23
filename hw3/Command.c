@@ -22,30 +22,26 @@ typedef struct
 #define BIDEFN(name) static void BINAME(name)(BIARGS)
 #define BIENTRY(name) {#name, BINAME(name)}
 
-// Unsure what the o is in wd
-static char *owd = 0;
+static char *oldWD = 0;
 static char *currentWD = 0;
 
 static void builtin_args(CommandRep r, int n)
 {
   char **argv = r->argv;
   for (n++; *argv++; n--)
-  {
-  };
+    ;
   if (n)
     ERROR("wrong number of arguments to builtin command"); // warn
 }
 
 BIDEFN(exit)
 {
-  printf("exit!");
   builtin_args(r, 0);
   *eof = 1;
 }
 
 BIDEFN(pwd)
 {
-  printf("pwd!");
   builtin_args(r, 0);
   if (!currentWD)
     currentWD = getcwd(0, 0);
@@ -54,31 +50,67 @@ BIDEFN(pwd)
 
 BIDEFN(cd)
 {
-  printf("cd!");
   builtin_args(r, 1);
+
   if (strcmp(r->argv[1], "-") == 0)
   {
+    // Switch to old working directory
+
+    // Is there a current working directory?
+    // if (!currentWD)
+    // {
+    //   // Need to adjust it
+    //   currentWD=getcwd(0,0);
+    // }
+
+    // Swap current working directory and the old working directory
     char *twd = currentWD;
-    currentWD = owd;
-    owd = twd;
+    currentWD = oldWD;
+    oldWD = twd;
   }
-  else
+  else if (strcmp(r->argv[1], "..") != 0 || strcmp(r->argv[1], "../..") != 0)
   {
-    if (owd)
-      free(owd);
-    owd = currentWD;
-    currentWD = strdup(r->argv[1]);
+    // Need to append file to the currentWD
+
+    char *readyWD;
+
+    // Is there a current working directory?
+    if (!currentWD)
+    {
+      // Need to adjust it
+      readyWD = getcwd(0, 0);
+    }
+
+    if (oldWD)
+      free(oldWD);
+    oldWD = currentWD;
+
+    // Appending file onto the current path
+    readyWD = strcat(readyWD, "/");
+    currentWD = strcat(readyWD, strdup(r->argv[1]));
   }
   if (currentWD && chdir(currentWD))
+  {
+    // fprintf(stdout, "%d, %d\n", strcmp(r->argv[1], "..") != 0, strcmp(r->argv[1], "../..") != 0);
+
     ERROR("chdir() failed"); // warn
+  }
 }
 
-// History command
+// History Command
 BIDEFN(history)
 {
   builtin_args(r, 0);
 
   fprintf(stdout, "History!\n");
+}
+
+BIDEFN(debug)
+{
+  builtin_args(r, 0);
+
+  // Get current oldWD and currentWD
+  fprintf(stdout, "Current working directory: %s, Old working directory: %s\n", currentWD, oldWD);
 }
 
 static int builtin(BIARGS)
@@ -95,6 +127,9 @@ static int builtin(BIARGS)
 
       // Adding history command
       BIENTRY(history),
+
+      // A little debugging information command
+      BIENTRY(debug),
 
       {0, 0}};
   int i;
@@ -146,14 +181,14 @@ static void child(CommandRep r, int fg)
   Jobs jobs = newJobs();
   if (builtin(r, &eof, jobs))
   {
-    // Should not be possible, child processes only execute on commands not builtin
-    fprintf(stderr, "CHild is builtin\n");
 
-    // ? Maybe?
-    exit(-1);
+    // This should not happen, child processes only execute on commands not builtin
+    fprintf(stdout, "Child is builtin\n");
 
-    // return;
+    return;
   }
+
+  // Executing the command in a file from $HOME (Similar behavior, atleast)
   execvp(r->argv[0], r->argv);
   ERROR("execvp() failed");
 
@@ -174,14 +209,13 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     addJobs(jobs, pipeline);
   }
 
-  // Forks the process because the command is not build int but is rather built into bash itself
+  // Forks the process because the command is not built in but is rather built into bash itself
   int pid = fork();
   if (pid == -1)
     ERROR("fork() failed");
   if (pid == 0)
   {
-    // Child process
-    fprintf(stdout, "Child process is running!\n");
+    // fprintf(stdout, "Child process running!\n");
     child(r, fg);
   }
   else
@@ -190,12 +224,12 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     int *pidProcess = &pid;
 
     // Parent process
-    // fprintf(stdout, "Parent (PID: %d) creating child (PID: %d)...\n", getpid(), pid);
+    printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
 
     // Wait for the child to finish
     wait(pidProcess);
 
-    // fprintf(stdout, "Child process completed!\n");
+    // printf("Child process completed!\n");
   }
 }
 
@@ -203,8 +237,11 @@ extern void freeCommand(Command command)
 {
   CommandRep r = command;
   char **argv = r->argv;
+  fprintf(stdout, "%ld\n", sizeof(argv));
   while (*argv)
+  {
     free(*argv++);
+  }
   free(r->argv);
   free(r);
 }
@@ -213,6 +250,6 @@ extern void freestateCommand()
 {
   if (currentWD)
     free(currentWD);
-  if (owd)
-    free(owd);
+  if (oldWD)
+    free(oldWD);
 }
