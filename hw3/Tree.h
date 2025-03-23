@@ -25,7 +25,7 @@ struct T_pipeline
 struct T_command
 {
   T_words words;
-  T_redir redir;
+  // T_redir redir;
 };
 
 struct T_words
@@ -41,9 +41,12 @@ struct T_word
 
 struct T_redir
 {
-  char *dir; /* < or > or even "" */
-  T_word word;
-  T_redir redir;
+  char *dir1; /* < or > or even "" */
+  T_word word1;
+  char *dir2; /* < or > or even "" */
+  T_word word2;
+
+  // T_redir redir;
 };
 
 extern T_redir new_redir();

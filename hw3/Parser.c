@@ -22,8 +22,9 @@ static T_words p_words();
 static T_command p_command();
 static T_pipeline p_pipeline();
 static T_sequence p_sequence();
-static T_redir p_redir();
+// static T_redir p_redir();
 
+/*
 static T_redir p_redir()
 {
 
@@ -56,7 +57,7 @@ static T_redir p_redir()
   T_word word1 = p_word();
 
   // Unsuccessful call?
-  if (word1->s == (int *)0)
+  if (word1->s == (char *)(void *)0)
   {
     // There is no word.
     // ? This should not be possible? (not syntactically valid)
@@ -68,39 +69,40 @@ static T_redir p_redir()
     // Could just be returning 0
     return 0;
   }
+  */
 
-  // Word exists (Yay!)
-  redir->word1 = word1;
+// Word exists (Yay!)
+redir->word1 = word1;
 
-  // Possible next section? ([<, > ==> word] ==>? [<, > ==> words])
-  next();
-  if (!dir || !(cmp("<") && cmp(">")))
-  {
-    // There is no additional redirection
-    // NULL out the last elements
-    redir->dir2 = NULL;
-    redir->word2 = NULL;
-    return redir;
-  }
-
-  T_word word2 = p_word();
-
-  // Unsuccessful call?
-  if (word2->s == (int *)0)
-  {
-    // There is no word.
-    // ? This should not be possible? (not syntactically valid)
-
-    // ? Maybe we just NULL whole element?
-    // redir = NULL;
-    // return redir;
-
-    // Could just be returning 0
-    return 0;
-  }
-
-  // Presumably, the redir is valid and will be sent back
+// Possible next section? ([<, > ==> word] ==>? [<, > ==> words])
+next();
+if (!dir || !(cmp("<") && cmp(">")))
+{
+  // There is no additional redirection
+  // NULL out the last elements
+  redir->dir2 = NULL;
+  redir->word2 = NULL;
   return redir;
+}
+
+T_word word2 = p_word();
+
+// Unsuccessful call?
+if (word2->s == (char *)(void *)0)
+{
+  // There is no word.
+  // ? This should not be possible? (not syntactically valid)
+
+  // ? Maybe we just NULL whole element?
+  // redir = NULL;
+  // return redir;
+
+  // Could just be returning 0
+  return 0;
+}
+
+// Presumably, the redir is valid and will be sent back
+return redir;
 }
 
 static T_word p_word()
@@ -135,15 +137,15 @@ static T_command p_command()
     return 0;
 
   // Implementing redir to comand
-  T_redir redir = 0;
-  redir = p_redir();
-  if (!redir)
-    return 0;
+  // T_redir redir = 0;
+  // redir = p_redir();
+  // if (!redir)
+  //   return 0;
 
   // Now creating the command, (All elements are there!)
   T_command command = new_command();
   command->words = words;
-  command->redir = redir;
+  // command->redir = redir;
 
   return command;
 }
@@ -195,6 +197,7 @@ static void f_words(T_words t);
 static void f_command(T_command t);
 static void f_pipeline(T_pipeline t);
 static void f_sequence(T_sequence t);
+// static void f_redir(T_redir t);
 
 static void f_word(T_word t)
 {
@@ -221,7 +224,7 @@ static void f_command(T_command t)
   f_words(t->words);
 
   // Need to add the redirection part of the command
-  f_redir(t->redir);
+  // f_redir(t->redir);
   free(t);
 }
 
@@ -243,6 +246,8 @@ static void f_sequence(T_sequence t)
   free(t);
 }
 
+/*
+
 static void f_redir(T_redir t)
 {
   // NEED TO CHECK AND MAKE SURE IT WORKS
@@ -253,8 +258,10 @@ static void f_redir(T_redir t)
   {
     f_word(t->word2);
   }
-  free(t)
+  free(t);
 }
+
+*/
 
 extern void freeTree(Tree t)
 {
