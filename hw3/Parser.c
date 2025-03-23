@@ -69,7 +69,7 @@ static T_redir p_redir()
     // Could just be returning 0
     return 0;
   }
-  */
+
 
 // Word exists (Yay!)
 redir->word1 = word1;
@@ -104,6 +104,7 @@ if (word2->s == (char *)(void *)0)
 // Presumably, the redir is valid and will be sent back
 return redir;
 }
+*/
 
 static T_word p_word()
 {
