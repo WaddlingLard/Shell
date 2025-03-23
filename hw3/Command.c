@@ -73,6 +73,14 @@ BIDEFN(cd)
     ERROR("chdir() failed"); // warn
 }
 
+// History command
+BIDEFN(history)
+{
+  builtin_args(r, 0);
+
+  fprintf(stdout, "History!\n");
+}
+
 static int builtin(BIARGS)
 {
   typedef struct
@@ -84,6 +92,10 @@ static int builtin(BIARGS)
       BIENTRY(exit),
       BIENTRY(pwd),
       BIENTRY(cd),
+
+      // Adding history command
+      BIENTRY(history),
+
       {0, 0}};
   int i;
   for (i = 0; builtins[i].s; i++)
