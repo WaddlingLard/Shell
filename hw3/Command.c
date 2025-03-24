@@ -73,18 +73,23 @@ BIDEFN(cd)
 
     // char *readyWD;
 
-    if (oldWD)
-      free(oldWD);
-    oldWD = currentWD;
-
     // Is there a current working directory?
-    // ? Important to check after so you don't get new stuff (I believe)
     if (!currentWD)
     {
       // Need to adjust it
       // readyWD = getcwd(0, 0);
       currentWD = getcwd(0, 0);
     }
+    else
+    {
+      free(currentWD);
+      currentWD = getcwd(0, 0);
+    }
+
+    if (oldWD)
+      free(oldWD);
+    // Cleared old directory reset with the 'new' one
+    oldWD = strdup(currentWD);
 
     // Appending file onto the current path
     // readyWD = strcat(readyWD, "/");
