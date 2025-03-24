@@ -67,9 +67,10 @@ BIDEFN(cd)
     currentWD = oldWD;
     oldWD = twd;
   }
-  else if (strcmp(r->argv[1], "..") != 0 || strcmp(r->argv[1], "../..") != 0)
+  else if (strcmp(r->argv[1], "..") != 0 && strcmp(r->argv[1], "../..") != 0)
   {
     // Need to append file to the currentWD
+    fprintf(stdout, "Arg is currently: %s\n", r->argv[1]);
 
     // char *readyWD;
 
@@ -79,6 +80,7 @@ BIDEFN(cd)
       // Need to adjust it
       // readyWD = getcwd(0, 0);
       currentWD = getcwd(0, 0);
+      // currentWD = strcat(currentWD, strdup("/"));
     }
 
     if (oldWD)
@@ -106,6 +108,12 @@ BIDEFN(cd)
       // readyWD = getcwd(0, 0);
       currentWD = getcwd(0, 0);
     }
+
+    int slash = '/';
+    char *lastSlash = strrchr(currentWD, slash);
+
+    fprintf(stdout, "Last slash location at: %s\n", lastSlash);
+    lastSlash = '\0';
 
 
 
