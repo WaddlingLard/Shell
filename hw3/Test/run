@@ -2,22 +2,16 @@
 
 prg=../../try
 
-for t in Test/Test_* ; do
-    x=${t##*/}
-    cd $x
-    history_file=".history"
-    if [ -f "$history_file" ]; then
-        rm $history_file
-    fi
-    cd ..
-done
-
 i=0
-for t in Test/Test_* ; do
+for t in * ; do
     x=${t##*/}
-    cd $x
+    if [ $x == "run" ]; then
+        continue
+    fi
+    echo $x
+    cd "$x" || continue
     $prg <inp 2>&1 >out
-    diff -q -w exp out 2>&1 >/dev/null; echo test $i success || echo ${t##*/} failed >&2
-    i=i+1
+    diff -q -w exp out 2>&1 >/dev/null || echo ${t##*/} failed >&2
+    ((i++))
     cd ..
 done
