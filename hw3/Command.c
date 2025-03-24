@@ -56,12 +56,11 @@ BIDEFN(cd)
   {
     // Switch to old working directory
 
-    // Is there a current working directory?
-    // if (!currentWD)
-    // {
-    //   // Need to adjust it
-    //   currentWD=getcwd(0,0);
-    // }
+    // Is there a previous working directory?
+    if (!oldWD)
+    {
+      ERROR("There is no previous working directory!\n");
+    }
 
     // Swap current working directory and the old working directory
     char *twd = currentWD;
