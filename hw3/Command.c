@@ -95,7 +95,8 @@ BIDEFN(cd)
 
     fprintf(stdout, "Current working directory: %s\n", currentWD);
   }
-  if (currentWD && chdir(currentWD))
+  // Could be a bug, chdir returns -1 on error
+  if (currentWD && chdir(currentWD) == -1)
   {
     // fprintf(stdout, "%d, %d\n", strcmp(r->argv[1], "..") != 0, strcmp(r->argv[1], "../..") != 0);
 
@@ -108,7 +109,31 @@ BIDEFN(history)
 {
   builtin_args(r, 0);
 
-  fprintf(stdout, "History!\n");
+  // Open history file
+  FILE *historyFile = fopen(".history", "r");
+  if (!historyFile)
+  {
+    // History file does not exist
+    ERROR("History file does not exist!\n");
+  }
+
+  // Read each line from the file
+  char *line = NULL;
+  size_t len = 0;
+  int lineNumber = 1; 
+
+  fprintf(stdout, "History of commands: \n");
+  while (getline(&line, &len, historyFile) != -1)
+  {
+    // Read the line
+    fprintf(stdout, "Line %d: %s", lineNumber++, line);
+  }
+
+  // Close the file and free the line
+  fclose(historyFile);
+  free(line);
+
+  // fprintf(stdout, "History!\n");
 }
 
 BIDEFN(debug)
@@ -150,6 +175,9 @@ static int builtin(BIARGS)
 
 static char **getargs(T_words words)
 {
+
+  fprintf(stdout, "Getting args\n");
+
   int n = 0;
   T_words p = words;
   while (p)
@@ -165,6 +193,9 @@ static char **getargs(T_words words)
   while (p)
   {
     argv[i++] = strdup(p->word->s);
+
+    fprintf(stdout, "Arg %d: %s\n", i - 1, argv[i - 1]);
+
     p = p->words;
   }
   argv[i] = 0;
@@ -176,8 +207,15 @@ extern Command newCommand(T_words words)
   CommandRep r = (CommandRep)malloc(sizeof(*r));
   if (!r)
     ERROR("malloc() failed");
+    
   r->argv = getargs(words);
   r->file = r->argv[0];
+
+  // char **test = r->argv;
+
+  // Outputting the command
+  // fprintf(stdout, "New command: argv, %s and file, %s\n", while (!test) { strcat()}, r->file);
+
   return r;
 }
 
