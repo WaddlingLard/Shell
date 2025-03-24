@@ -179,7 +179,9 @@ static Data rem(Rep r, End e, Data d)
 
     // Have to use '==' comparison on dereferenced values
     // if (*(char *)pulled == *(char *)d)
-    if (pulled == d)
+    // if (pulled == d)
+    void ** locationOfPulled = (void *)pulled;
+    if (memcmp(pulled, d, sizeof(*locationOfPulled)) == 0)
     {
       remove = current;
       // printf("Found a match!");
@@ -298,10 +300,16 @@ extern Data deq_tail_rem(Deq q, Data d) { return rem(rep(q), Tail, d); }
 
 extern void deq_map(Deq q, DeqMapF f)
 {
+
+  // deq_str(q, 0);
+
+
   for (Node n = rep(q)->ht[Head]; n; n = n->np[Tail])
   {
-    fprintf(stdout, "Size of Deq: %d\n", deq_len(q));
+    // fprintf(stdout, "Size of Deq: %d\n", deq_len(q));
     // fprintf(stdout, "Data: %s\n",(char *)n->data);
+    if (!n->data)
+      return;
     f(n->data);
   }
 }
