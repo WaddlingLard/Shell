@@ -71,7 +71,7 @@ BIDEFN(cd)
   {
     // Need to append file to the currentWD
 
-    char *readyWD;
+    // char *readyWD;
 
     if (oldWD)
       free(oldWD);
@@ -92,8 +92,31 @@ BIDEFN(cd)
     currentWD = strcat(currentWD, strdup("/"));
     currentWD = strcat(currentWD, strdup(r->argv[1]));
 
-    fprintf(stdout, "Current working directory: %s\n", currentWD);
+    // fprintf(stdout, "Current working directory: %s\n", currentWD);
   }
+  else if (strcmp(r->argv[1], "..") == 0)
+  {
+    // Need to go back to the parent directory
+    
+    // Is there a current working directory?
+    // ? Important to check after so you don't get new stuff (I believe)
+    if (!currentWD)
+    {
+      // Need to adjust it
+      // readyWD = getcwd(0, 0);
+      currentWD = getcwd(0, 0);
+    }
+
+
+
+    // fprintf(stdout, "Current working directory: %s\n", currentWD);
+  }
+  else
+  {
+    // Need to go back to the grandparent directory
+  }
+
+
   // Could be a bug, chdir returns -1 on error
   if (currentWD && chdir(currentWD) == -1)
   {
@@ -175,7 +198,7 @@ static int builtin(BIARGS)
 static char **getargs(T_words words)
 {
 
-  fprintf(stdout, "Getting args\n");
+  // fprintf(stdout, "Getting args\n");
 
   int n = 0;
   T_words p = words;
@@ -193,7 +216,7 @@ static char **getargs(T_words words)
   {
     argv[i++] = strdup(p->word->s);
 
-    fprintf(stdout, "Arg %d: %s\n", i - 1, argv[i - 1]);
+    // fprintf(stdout, "Arg %d: %s\n", i - 1, argv[i - 1]);
 
     p = p->words;
   }
@@ -267,7 +290,7 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     int *pidProcess = &pid;
 
     // Parent process
-    printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
+    // printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
 
     // Wait for the child to finish
     wait(pidProcess);
@@ -284,14 +307,14 @@ extern void freeCommand(Command command)
   while (*argv)
   {
     // What argument is it freeing?
-    fprintf(stdout, "%s\n", *argv);
+    // fprintf(stdout, "%s\n", *argv);
     
     free(*argv++);
   }
   free(r->argv);
   free(r);
 
-  fprintf(stdout, "Command has been freed!\n");
+  // fprintf(stdout, "Command has been freed!\n");
 }
 
 extern void freestateCommand()
