@@ -32,7 +32,7 @@ int main()
   while (!eof)
   {
     char *line = readline(prompt);
-    fprintf(stdout, "%s\n", line);
+    // fprintf(stdout, "%s\n", line);
     if (!line)
       break;
     if (*line)

@@ -80,11 +80,6 @@ BIDEFN(cd)
       // readyWD = getcwd(0, 0);
       currentWD = getcwd(0, 0);
     }
-    else
-    {
-      free(currentWD);
-      currentWD = getcwd(0, 0);
-    }
 
     if (oldWD)
       free(oldWD);
@@ -295,12 +290,12 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     int *pidProcess = &pid;
 
     // Parent process
-    // printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
+    printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
 
     // Wait for the child to finish
     wait(pidProcess);
 
-    // printf("Child process completed!\n");
+    printf("Child process completed!\n");
   }
 }
 

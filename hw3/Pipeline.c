@@ -33,7 +33,11 @@ extern int sizePipeline(Pipeline pipeline) {
 }
 
 static void execute(Pipeline pipeline, Jobs jobs, int *jobbed, int *eof) {
+
   PipelineRep r=(PipelineRep)pipeline;
+
+  fprintf(stdout, "Executing pipeline... , number of jobs: %d\n", sizePipeline(r));
+  
   for (int i=0; i<sizePipeline(r) && !*eof; i++)
     execCommand(deq_head_ith(r->processes,i),pipeline,jobs,jobbed,eof,1);
 }
