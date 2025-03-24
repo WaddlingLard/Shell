@@ -1,9 +1,23 @@
 #!/bin/bash
 
-prg=../try
+prg=../../try
 
 for t in Test/Test_* ; do
-    echo ${t##*/}
-    $prg <$t/inp 2>&1 >$t/out
-    diff -q -w $t/exp $t/out 2>&1 >/dev/null || echo ${t##*/} failed >&2
+    x=${t##*/}
+    cd $x
+    history_file=".history"
+    if [ -f "$history_file" ]; then
+        rm $history_file
+    fi
+    cd ..
+done
+
+i=0
+for t in Test/Test_* ; do
+    x=${t##*/}
+    cd $x
+    $prg <inp 2>&1 >out
+    diff -q -w exp out 2>&1 >/dev/null; echo test $i success || echo ${t##*/} failed >&2
+    i=i+1
+    cd ..
 done
