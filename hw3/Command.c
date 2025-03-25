@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 // Used for managing child processes
 #include <sys/types.h>
@@ -72,34 +73,36 @@ BIDEFN(cd)
     // Need to append file to the currentWD
     fprintf(stdout, "Arg is currently: %s\n", r->argv[1]);
 
-    // char *readyWD;
-
     // Is there a current working directory?
     if (!currentWD)
     {
-      // Need to adjust it
-      // readyWD = getcwd(0, 0);
+      // Need to grab it
       currentWD = getcwd(0, 0);
-      // currentWD = strcat(currentWD, strdup("/"));
     }
+
+    char readyWD[strlen(currentWD) + 1];
+
+    strncpy(readyWD, currentWD, strlen(currentWD));
+    strcat(readyWD, "/");
+
+    fprintf(stdout, "File path: %s\n", readyWD);
 
     if (oldWD)
       free(oldWD);
     // Cleared old directory reset with the 'new' one
     oldWD = strdup(currentWD);
 
-    // Appending file onto the current path
-    // readyWD = strcat(readyWD, "/");
-    // currentWD = strcat(readyWD, strdup("/"));
-    currentWD = strcat(currentWD, strdup("/"));
-    currentWD = strcat(currentWD, strdup(r->argv[1]));
+    free(currentWD);
 
-    // fprintf(stdout, "Current working directory: %s\n", currentWD);
+    // Appending file onto the current path
+    currentWD = strcat(strdup(readyWD), r->argv[1]);
+
+    fprintf(stdout, "Current working directory: %s\n", currentWD);
   }
   else if (strcmp(r->argv[1], "..") == 0)
   {
     // Need to go back to the parent directory
-    
+
     // Is there a current working directory?
     // ? Important to check after so you don't get new stuff (I believe)
     if (!currentWD)
@@ -113,9 +116,7 @@ BIDEFN(cd)
     char *lastSlash = strrchr(currentWD, slash);
 
     fprintf(stdout, "Last slash location at: %s\n", lastSlash);
-    lastSlash = '\0';
-
-
+    // char *locationOfEnd =
 
     // fprintf(stdout, "Current working directory: %s\n", currentWD);
   }
@@ -124,11 +125,13 @@ BIDEFN(cd)
     // Need to go back to the grandparent directory
   }
 
-
   // Could be a bug, chdir returns -1 on error
   if (currentWD && chdir(currentWD) == -1)
   {
-    // fprintf(stdout, "%d, %d\n", strcmp(r->argv[1], "..") != 0, strcmp(r->argv[1], "../..") != 0);
+
+    // What is the chdir error?
+    fprintf(stdout, "Name: %d\n", errno);
+    fprintf(stdout, "Error: %s\n", strerror(errno));
 
     ERROR("chdir() failed"); // warn
   }
@@ -150,7 +153,7 @@ BIDEFN(history)
   // Read each line from the file
   char *line = NULL;
   size_t len = 0;
-  int lineNumber = 1; 
+  int lineNumber = 1;
 
   fprintf(stdout, "History of commands: \n");
   while (getline(&line, &len, historyFile) != -1)
@@ -215,7 +218,8 @@ static char **getargs(T_words words)
     p = p->words;
     n++;
   }
-  char **argv = (char **)malloc(sizeof(char *) * (n + 1));
+  char **argv = (char **)malloc(sizeof(char *) * (n + 2));
+  memset(argv, 0, sizeof(char *) * (n + 2));
   if (!argv)
     ERROR("malloc() failed");
   p = words;
@@ -237,7 +241,7 @@ extern Command newCommand(T_words words)
   CommandRep r = (CommandRep)malloc(sizeof(*r));
   if (!r)
     ERROR("malloc() failed");
-    
+
   r->argv = getargs(words);
   r->file = r->argv[0];
 
@@ -316,9 +320,10 @@ extern void freeCommand(Command command)
   {
     // What argument is it freeing?
     // fprintf(stdout, "%s\n", *argv);
-    
+
     free(*argv++);
   }
+
   free(r->argv);
   free(r);
 
