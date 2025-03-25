@@ -315,17 +315,22 @@ extern Command newCommand(T_command command)
   if (command->in)
   {
     r->in = command->in;
-    // Unsure about this for now
-    r->out = NULL;
   }
-  else if (command->out)
+  else
   {
-    r->out = command->out;
-    // Unsure about this for now
     r->in = NULL;
   }
 
-  outputcommand(r);
+  if (command->out)
+  {
+    r->out = command->out;
+  }
+  else
+  {
+    r->out = NULL;
+  }
+
+  // outputcommand(r);
 
   // char **test = r->argv;
 
@@ -337,6 +342,9 @@ extern Command newCommand(T_command command)
 
 static void child(CommandRep r, int fg)
 {
+
+  int redirflag = 0;
+
   int eof = 0;
   Jobs jobs = newJobs();
   if (builtin(r, &eof, jobs))
@@ -346,6 +354,12 @@ static void child(CommandRep r, int fg)
     fprintf(stdout, "Child is builtin\n");
 
     return;
+  }
+
+  // Is there an input/output redirection?
+  if (r->in || r->out)
+  {
+    redirflag = 1;
   }
 
   // Executing the command in a file from $HOME (Similar behavior, atleast)
@@ -405,6 +419,12 @@ extern void freeCommand(Command command)
 
     free(*argv++);
   }
+
+  // Free redir
+  if (r->in)
+    free(r->in);
+  if (r->out)
+    free(r->out);
 
   free(r->argv);
   free(r);
