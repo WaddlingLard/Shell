@@ -16,6 +16,8 @@ typedef struct
 {
   char *file;
   char **argv;
+  char *in;
+  char *out;
 } *CommandRep;
 
 #define BIARGS CommandRep r, int *eof, Jobs jobs
@@ -26,7 +28,11 @@ typedef struct
 static char *oldWD = 0;
 static char *currentWD = 0;
 
-static void builtin_args(CommandRep r, int n)
+static char *parentDir = "..";
+static char *grandparentDir = "../..";
+
+static void
+builtin_args(CommandRep r, int n)
 {
   char **argv = r->argv;
   for (n++; *argv++; n--)
@@ -70,6 +76,34 @@ void truncatefilepath()
   lastSlash[0] = '\0';
 }
 
+// A string appending method that adds another file to the filepath
+void appendfilepath()
+{
+
+  // Is there a current working directory?
+  if (!currentWD)
+  {
+    // Need to grab it
+    currentWD = getcwd(0, 0);
+  }
+
+  char readyWD[strlen(currentWD) + 1];
+
+  strncpy(readyWD, currentWD, strlen(currentWD));
+  readyWD[strlen(currentWD)] = '/';
+  readyWD[strlen(currentWD) + 1] = '\0';
+
+  if (oldWD)
+    free(oldWD);
+  // Cleared old directory reset with the 'new' one
+  oldWD = strdup(currentWD);
+
+  free(currentWD);
+
+  // Appending file onto the current path
+  currentWD = strncat(strdup(readyWD), r->argv[1], strlen(readyWD) + strlen(r->argv[1]));
+}
+
 BIDEFN(cd)
 {
   builtin_args(r, 1);
@@ -89,43 +123,14 @@ BIDEFN(cd)
     currentWD = oldWD;
     oldWD = twd;
   }
-  else if (strcmp(r->argv[1], "..") != 0 && strcmp(r->argv[1], "../..") != 0)
+  // Checking if there needs to be any shifting upwards
+  else if (strncmp(r->argv[1], "..", (size_t)strlen(parentDir)) != 0 && strncmp(r->argv[1], "../..", strlen(grandparentDir)) != 0)
   {
     // Need to append file to the currentWD
-    fprintf(stdout, "Arg is currently: %s\n", r->argv[1]);
-
-    // Is there a current working directory?
-    if (!currentWD)
-    {
-      // Need to grab it
-      currentWD = getcwd(0, 0);
-    }
-
-    char readyWD[strlen(currentWD) + 1];
-
-    strncpy(readyWD, currentWD, strlen(currentWD));
-    readyWD[strlen(currentWD)] = '/';
-    readyWD[strlen(currentWD) + 1] = '\0';
-
-    fprintf(stdout, "File path: %s\n", readyWD);
-
-    if (oldWD)
-      free(oldWD);
-    // Cleared old directory reset with the 'new' one
-    oldWD = strdup(currentWD);
-
-    free(currentWD);
-
-    // Appending file onto the current pathe
-    // currentWD = strcat(strdup(readyWD), r->argv[1]);
-    currentWD = strncat(strdup(readyWD), r->argv[1], strlen(readyWD) + strlen(r->argv[1]));
-
-    fprintf(stdout, "Current working directory: %s\n", currentWD);
+    appendfilepath();
   }
-  else if (strcmp(r->argv[1], "..") == 0)
+  else if (strncmp(r->argv[1], "../..", strlen(grandparentDir)) == 0)
   {
-    // Need to go back to the parent directory
-    truncatefilepath();
   }
   else
   {
@@ -311,12 +316,12 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     int *pidProcess = &pid;
 
     // Parent process
-    printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
+    // printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
 
     // Wait for the child to finish
     wait(pidProcess);
 
-    printf("Child process completed!\n");
+    // printf("Child process completed!\n");
   }
 }
 
