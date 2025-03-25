@@ -53,5 +53,8 @@ int main()
     fclose(rl_outstream);
   }
   freestateCommand();
+
+  // Free the jobs!
+  freeJobs(jobs);
   return 0;
 }
