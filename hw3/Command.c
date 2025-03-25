@@ -77,7 +77,7 @@ void truncatefilepath()
 }
 
 // A string appending method that adds another file to the filepath
-void appendfilepath()
+void appendfilepath(CommandRep r, char *argv, int len)
 {
 
   // Is there a current working directory?
@@ -101,7 +101,7 @@ void appendfilepath()
   free(currentWD);
 
   // Appending file onto the current path
-  currentWD = strncat(strdup(readyWD), r->argv[1], strlen(readyWD) + strlen(r->argv[1]));
+  currentWD = strncat(strdup(readyWD), argv, len);
 }
 
 BIDEFN(cd)
@@ -127,16 +127,47 @@ BIDEFN(cd)
   else if (strncmp(r->argv[1], "..", (size_t)strlen(parentDir)) != 0 && strncmp(r->argv[1], "../..", strlen(grandparentDir)) != 0)
   {
     // Need to append file to the currentWD
-    appendfilepath();
+    appendfilepath(r, r->argv[1], strlen(r->argv[1]));
   }
   else if (strncmp(r->argv[1], "../..", strlen(grandparentDir)) == 0)
-  {
-  }
-  else
   {
     // Need to go back to the grandparent directory
     truncatefilepath();
     truncatefilepath();
+
+    if (strlen(r->argv[1]) > strlen(grandparentDir))
+    {
+      // There is stuff to append from
+
+      // How long is the filepath?
+      int len = strlen(r->argv[1]) - (strlen(grandparentDir) + 1);
+
+      // Grab the substring (+1 for terminator)
+      char subfilepath[len + 1];
+
+      // Get the substring (+1 is to account for the additional '/')
+      strncpy(subfilepath, r->argv[1] + strlen(grandparentDir) + 1, len);
+      subfilepath[len] = '\0';
+
+      // Append
+      appendfilepath(r, subfilepath, strlen(subfilepath));
+    }
+  }
+  else
+  {
+    // Need to go back to the parent directory
+    truncatefilepath();
+
+    int len = strlen(r->argv[1]) - (strlen(grandparentDir) + 1);
+
+    if (strlen(r->argv[1]) > strlen(parentDir))
+    {
+      // There is stuff to append
+      char subfilepath[len + 1];
+      strncpy(subfilepath, r->argv[1] + strlen(grandparentDir) + 1, len);
+      subfilepath[len] = '\0';
+      appendfilepath(r, subfilepath, strlen(subfilepath));
+    }
   }
 
   // Could be a bug, chdir returns -1 on error
