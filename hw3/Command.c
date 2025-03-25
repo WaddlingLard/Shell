@@ -135,12 +135,13 @@ BIDEFN(cd)
     truncatefilepath();
     truncatefilepath();
 
-    if (strlen(r->argv[1]) > strlen(grandparentDir))
+    // How long is the filepath?
+    int len = strlen(r->argv[1]) - (strlen(grandparentDir) + 1);
+
+    // Account for possible additional '/' with the +1
+    if (strlen(r->argv[1]) > strlen(grandparentDir) + 1)
     {
       // There is stuff to append from
-
-      // How long is the filepath?
-      int len = strlen(r->argv[1]) - (strlen(grandparentDir) + 1);
 
       // Grab the substring (+1 for terminator)
       char subfilepath[len + 1];
@@ -158,13 +159,14 @@ BIDEFN(cd)
     // Need to go back to the parent directory
     truncatefilepath();
 
-    int len = strlen(r->argv[1]) - (strlen(grandparentDir) + 1);
+    int len = strlen(r->argv[1]) - (strlen(parentDir) + 1);
 
-    if (strlen(r->argv[1]) > strlen(parentDir))
+    // Account for possible additional '/' with the +1
+    if (strlen(r->argv[1]) > strlen(parentDir) + 1)
     {
       // There is stuff to append
       char subfilepath[len + 1];
-      strncpy(subfilepath, r->argv[1] + strlen(grandparentDir) + 1, len);
+      strncpy(subfilepath, r->argv[1] + strlen(parentDir) + 1, len);
       subfilepath[len] = '\0';
       appendfilepath(r, subfilepath, strlen(subfilepath));
     }
