@@ -39,6 +39,8 @@ BIDEFN(exit)
 {
   builtin_args(r, 0);
   *eof = 1;
+
+  // Need to wait for any jobs running in the background
 }
 
 BIDEFN(pwd)
@@ -47,6 +49,25 @@ BIDEFN(pwd)
   if (!currentWD)
     currentWD = getcwd(0, 0);
   printf("%s\n", currentWD);
+}
+
+// A string truncating method that snips the filepath
+// ? Has not been tested on root
+void truncatefilepath()
+{
+  // Is there a current working directory?
+  if (!currentWD)
+  {
+    // Need to get it
+    currentWD = getcwd(0, 0);
+  }
+
+  // Look for the last file
+  int slash = '/';
+  char *lastSlash = strrchr(currentWD, slash);
+
+  // Truncate the filepath
+  lastSlash[0] = '\0';
 }
 
 BIDEFN(cd)
@@ -83,7 +104,8 @@ BIDEFN(cd)
     char readyWD[strlen(currentWD) + 1];
 
     strncpy(readyWD, currentWD, strlen(currentWD));
-    strcat(readyWD, "/");
+    readyWD[strlen(currentWD)] = '/';
+    readyWD[strlen(currentWD) + 1] = '\0';
 
     fprintf(stdout, "File path: %s\n", readyWD);
 
@@ -94,35 +116,22 @@ BIDEFN(cd)
 
     free(currentWD);
 
-    // Appending file onto the current path
-    currentWD = strcat(strdup(readyWD), r->argv[1]);
+    // Appending file onto the current pathe
+    // currentWD = strcat(strdup(readyWD), r->argv[1]);
+    currentWD = strncat(strdup(readyWD), r->argv[1], strlen(readyWD) + strlen(r->argv[1]));
 
     fprintf(stdout, "Current working directory: %s\n", currentWD);
   }
   else if (strcmp(r->argv[1], "..") == 0)
   {
     // Need to go back to the parent directory
-
-    // Is there a current working directory?
-    // ? Important to check after so you don't get new stuff (I believe)
-    if (!currentWD)
-    {
-      // Need to adjust it
-      // readyWD = getcwd(0, 0);
-      currentWD = getcwd(0, 0);
-    }
-
-    int slash = '/';
-    char *lastSlash = strrchr(currentWD, slash);
-
-    fprintf(stdout, "Last slash location at: %s\n", lastSlash);
-    // char *locationOfEnd =
-
-    // fprintf(stdout, "Current working directory: %s\n", currentWD);
+    truncatefilepath();
   }
   else
   {
     // Need to go back to the grandparent directory
+    truncatefilepath();
+    truncatefilepath();
   }
 
   // Could be a bug, chdir returns -1 on error
