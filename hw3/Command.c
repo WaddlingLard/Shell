@@ -4,6 +4,9 @@
 #include <string.h>
 #include <errno.h>
 
+// Used for redirects
+#include <fcntl.h>
+
 // Used for managing child processes
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -18,6 +21,7 @@ typedef struct
   char **argv;
   char *in;
   char *out;
+  int pid;
 } *CommandRep;
 
 #define BIARGS CommandRep r, int *eof, Jobs jobs
@@ -47,6 +51,7 @@ BIDEFN(exit)
   *eof = 1;
 
   // Need to wait for any jobs running in the background
+  jobswait(jobs);
 }
 
 BIDEFN(pwd)
@@ -177,8 +182,8 @@ BIDEFN(cd)
   {
 
     // What is the chdir error?
-    fprintf(stdout, "Name: %d\n", errno);
-    fprintf(stdout, "Error: %s\n", strerror(errno));
+    fprintf(stderr, "Name: %d\n", errno);
+    fprintf(stderr, "Error: %s\n", strerror(errno));
 
     ERROR("chdir() failed"); // warn
   }
@@ -343,7 +348,8 @@ extern Command newCommand(T_command command)
 static void child(CommandRep r, int fg)
 {
 
-  int redirflag = 0;
+  int inputfiledescriptor = -1, outputfiledescriptor = -1;
+  // int filedescriptor = -1;
 
   int eof = 0;
   Jobs jobs = newJobs();
@@ -357,9 +363,55 @@ static void child(CommandRep r, int fg)
   }
 
   // Is there an input/output redirection?
-  if (r->in || r->out)
+  if (r->in)
   {
-    redirflag = 1;
+    inputfiledescriptor = open(r->in, O_RDONLY);
+    // fprintf(stdout, "File open!\n");
+
+    // fprintf(stdout, "Channel Open on %d\n", filedescriptor);
+
+    if (inputfiledescriptor == -1)
+    {
+      // Error has occured when opening the input file
+      fprintf(stderr, "Name: %s\n", strerrorname_np(errno));
+      fprintf(stderr, "Error: %s\n", strerror(errno));
+      ERROR("Opening input failed!");
+    }
+
+    if (inputfiledescriptor != STDIN_FILENO)
+    {
+      // Move the file to the standard in
+      if (dup2(inputfiledescriptor, STDIN_FILENO) != STDIN_FILENO)
+      {
+        ERROR("Input is already StandardIn!\n");
+      }
+      close(inputfiledescriptor);
+    }
+  }
+
+  if (r->out)
+  {
+    outputfiledescriptor = open(r->out, O_CREAT | O_WRONLY | O_TRUNC);
+    // outputfiledescriptor = creat(r->out, 00777);
+    fprintf(stdout, "Output open! %d\n", outputfiledescriptor);
+
+    if (outputfiledescriptor == -1)
+    {
+      // Error has occured when opening the input file
+      fprintf(stderr, "Name: %s\n", strerrorname_np(errno));
+      fprintf(stderr, "Error: %s\n", strerror(errno));
+      ERROR("Opening input failed!");
+    }
+
+    if (outputfiledescriptor != STDOUT_FILENO)
+    {
+      // Move the file to standard out
+      if (dup2(outputfiledescriptor, STDOUT_FILENO) != STDOUT_FILENO)
+      {
+        ERROR("Output is already StandardOut!\n");
+      }
+      close(outputfiledescriptor);
+    }
   }
 
   // Executing the command in a file from $HOME (Similar behavior, atleast)
@@ -392,19 +444,19 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     // fprintf(stdout, "Child process running!\n");
     child(r, fg);
   }
-  else
-  {
 
-    int *pidProcess = &pid;
+  // Save process id into the rep
+  r->pid = pid;
 
-    // Parent process
-    // printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
+  // int *pidProcess = &pid;
 
+  // Parent process
+  // printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
+  if (fg)
     // Wait for the child to finish
-    wait(pidProcess);
+    wait(pid);
 
-    // printf("Child process completed!\n");
-  }
+  // printf("Child process completed!\n");
 }
 
 extern void freeCommand(Command command)
@@ -438,4 +490,10 @@ extern void freestateCommand()
     free(currentWD);
   if (oldWD)
     free(oldWD);
+}
+
+extern int getProcessID(Command command)
+{
+  CommandRep r = (CommandRep)command;
+  return r->pid;
 }
