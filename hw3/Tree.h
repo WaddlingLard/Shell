@@ -1,7 +1,7 @@
 #ifndef TREE_H
 #define TREE_H
 
-typedef struct T_redir *T_redir;
+// typedef struct T_redir *T_redir;
 typedef struct T_sequence *T_sequence;
 typedef struct T_pipeline *T_pipeline;
 typedef struct T_command *T_command;
@@ -25,7 +25,8 @@ struct T_pipeline
 struct T_command
 {
   T_words words;
-  // T_redir redir;
+  char *in;
+  char *out;
 };
 
 struct T_words
@@ -39,17 +40,19 @@ struct T_word
   char *s;
 };
 
+/*
 struct T_redir
 {
-  char *dir1; /* < or > or even "" */
+  char *dir1; // < or > or even ""
   T_word word1;
-  char *dir2; /* < or > or even "" */
+  char *dir2; // < or > or even ""
   T_word word2;
 
   // T_redir redir;
 };
+*/
 
-extern T_redir new_redir();
+// extern T_redir new_redir();
 extern T_sequence new_sequence();
 extern T_pipeline new_pipeline();
 extern T_command new_command();
