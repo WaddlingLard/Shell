@@ -12,4 +12,6 @@ extern int sizePipeline(Pipeline pipeline);
 extern void execPipeline(Pipeline pipeline, Jobs jobs, int *eof);
 extern void freePipeline(Pipeline pipeline);
 
+extern int getlastprocess(Pipeline pipeline);
+
 #endif
