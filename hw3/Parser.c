@@ -147,10 +147,16 @@ static T_command p_command()
   T_command command = new_command();
   command->words = words;
 
+  // Implementing the redirect feature
   if (eat("<"))
   {
     T_word w = p_word();
     command->in = strdup(w->s);
+  }
+  else if (eat(">"))
+  {
+    T_word w = p_word();
+    command->out = strdup(w->s);
   }
   // command->redir = redir;
 
@@ -232,6 +238,17 @@ static void f_command(T_command t)
 
   // Need to add the redirection part of the command
   // f_redir(t->redir);
+
+  // Free redir
+  if (t->in)
+  {
+    free(t->in);
+  }
+  if (t->out)
+  {
+    free(t->out);
+  }
+
   free(t);
 }
 
