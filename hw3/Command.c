@@ -283,14 +283,49 @@ static char **getargs(T_words words)
   return argv;
 }
 
-extern Command newCommand(T_words words)
+// Helper command to display output, purely for debugging
+void outputcommand(CommandRep r)
+{
+  fprintf(stdout, "New command created!\n");
+  char **wordsptr = r->argv;
+
+  fprintf(stdout, "Words: ");
+  while (*wordsptr)
+  {
+    fprintf(stdout, "%s, ", *wordsptr++);
+  }
+  fprintf(stdout, "\n");
+
+  fprintf(stdout, "File: %s\n", r->file);
+
+  fprintf(stdout, "Input: %s\n", r->in);
+  fprintf(stdout, "Output: %s\n", r->out);
+}
+
+extern Command newCommand(T_command command)
 {
   CommandRep r = (CommandRep)malloc(sizeof(*r));
   if (!r)
     ERROR("malloc() failed");
 
-  r->argv = getargs(words);
+  r->argv = getargs(command->words);
   r->file = r->argv[0];
+
+  // Apply the new redir features into command
+  if (command->in)
+  {
+    r->in = command->in;
+    // Unsure about this for now
+    r->out = NULL;
+  }
+  else if (command->out)
+  {
+    r->out = command->out;
+    // Unsure about this for now
+    r->in = NULL;
+  }
+
+  outputcommand(r);
 
   // char **test = r->argv;
 
