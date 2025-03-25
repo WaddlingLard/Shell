@@ -124,7 +124,7 @@ static T_words p_words()
     return 0;
   T_words words = new_words();
   words->word = word;
-  if (cmp("|") || cmp("&") || cmp(";"))
+  if (cmp("|") || cmp("&") || cmp(";") || cmp("<") || cmp(">"))
     return words;
   words->words = p_words();
   return words;
@@ -146,6 +146,12 @@ static T_command p_command()
   // Now creating the command, (All elements are there!)
   T_command command = new_command();
   command->words = words;
+
+  if (eat("<"))
+  {
+    T_word w = p_word();
+    command->in = strdup(w->s);
+  }
   // command->redir = redir;
 
   return command;
