@@ -16,4 +16,6 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
 extern void freeCommand(Command command);
 extern void freestateCommand();
 
+extern int getProcessID(Command command);
+
 #endif
