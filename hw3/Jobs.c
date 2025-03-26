@@ -10,6 +10,7 @@ extern Jobs newJobs()
 extern void addJobs(Jobs jobs, Pipeline pipeline)
 {
   deq_tail_put(jobs, pipeline);
+  // fprintf(stdout, "Adding a job! Size of deq: %d\n", deq_len(jobs));
 }
 
 extern int sizeJobs(Jobs jobs)
