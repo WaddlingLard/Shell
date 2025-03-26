@@ -17,6 +17,7 @@ extern void freeCommand(Command command);
 extern void freestateCommand();
 
 extern int getProcessID(Command command);
+extern char *getname(Command command);
 extern void setreadfd(Command command, int fd);
 extern void setwritefd(Command command, int fd);
 

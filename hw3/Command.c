@@ -370,12 +370,16 @@ static void child(CommandRep r, int fg)
   // Implement pipelines
   if (r->fd[0] != 0)
   {
+    // fprintf(stdout, "Command: %s, reading from: %d\n", r->file, r->fd[0]);
+
     dup2(r->fd[0], 0);
     close(r->fd[0]);
   }
 
   if (r->fd[1] != 1)
   {
+    // fprintf(stdout, "Command: %s, writing from: %d\n", r->file, r->fd[1]);
+
     dup2(r->fd[1], 1);
     close(r->fd[1]);
   }
@@ -411,7 +415,7 @@ static void child(CommandRep r, int fg)
   {
     outputfiledescriptor = open(r->out, O_CREAT | O_WRONLY | O_TRUNC);
     // outputfiledescriptor = creat(r->out, 00777);
-    fprintf(stdout, "Output open! %d\n", outputfiledescriptor);
+    // fprintf(stdout, "Output open! %d\n", outputfiledescriptor);
 
     if (outputfiledescriptor == -1)
     {
@@ -529,14 +533,26 @@ extern int getProcessID(Command command)
   return r->pid;
 }
 
+extern char *getname(Command command)
+{
+  CommandRep r = (CommandRep)command;
+  return r->file;
+}
+
 extern void setreadfd(Command command, int fd)
 {
   CommandRep r = (CommandRep)command;
+
+  // fprintf(stdout, "Setting %s read file descriptor to %d previously from %d\n", r->file, fd, r->fd[0]);
   r->fd[0] = fd;
+  // fprintf(stdout, "Now: %d\n", r->fd[0]);
 }
 
 extern void setwritefd(Command command, int fd)
 {
   CommandRep r = (CommandRep)command;
+
+  // fprintf(stdout, "Setting %s write file descriptor to %d previously from %d\n", r->file, fd, r->fd[1]);
   r->fd[1] = fd;
+  // fprintf(stdout, "Now: %d\n", r->fd[1]);
 }
