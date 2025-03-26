@@ -4,11 +4,11 @@ ldflags:=-lreadline -lncurses
 
 include ../GNUmakefile
 
-# try: $(objs) libdeq.so
-# 	gcc -o $@ $(objs) $(ldflags) -L. -ldeq -Wl,-rpath=.
+shell: $(objs) libdeq.so
+	gcc -o $@ $(objs) $(ldflags) -L. -ldeq -Wl,-rpath=.
 
-try: $(objs)
-	gcc -o $@ $(objs) $(ldflags) -L. -Wl,-rpath=.
+try: $(objs) libdeq.so
+	gcc -o $@ $(objs) $(ldflags) -L. -ldeq -Wl,-rpath=.
 
 trytest: try
 	Test/run
