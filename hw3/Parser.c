@@ -150,11 +150,14 @@ static T_command p_command()
   // Implementing the redirect feature
   if (eat("<"))
   {
+    // fprintf(stdout, "Input!\n");
     T_word w = p_word();
     command->in = strdup(w->s);
   }
-  else if (eat(">"))
+  if (eat(">"))
   {
+    // fprintf(stdout, "Output!\n");
+
     T_word w = p_word();
     command->out = strdup(w->s);
   }
@@ -182,6 +185,8 @@ static T_sequence p_sequence()
     return 0;
   T_sequence sequence = new_sequence();
   sequence->pipeline = pipeline;
+  sequence->op = "";
+
   if (eat("&"))
   {
     sequence->op = "&";
