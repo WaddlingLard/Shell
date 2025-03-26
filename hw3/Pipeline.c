@@ -74,3 +74,9 @@ extern int getlastprocess(Pipeline pipeline)
   PipelineRep r = (PipelineRep)pipeline;
   return r->lastprocessid;
 }
+
+extern Deq getprocesses(Pipeline pipeline)
+{
+  PipelineRep r = (PipelineRep)pipeline;
+  return r->processes;
+}
