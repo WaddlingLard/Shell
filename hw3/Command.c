@@ -114,6 +114,19 @@ BIDEFN(cd)
 {
   builtin_args(r, 1);
 
+  // Root directory ([size_t]1 to represent the size of "/")
+  if (strlen(r->argv[1]) == 1 && !(strncmp(r->argv[1], "/", (size_t)1)))
+  {
+
+    if (currentWD)
+    {
+      // Need to free currentWD
+      free(currentWD);
+    }
+
+    currentWD = strdup("/");
+  }
+
   if (strcmp(r->argv[1], "-") == 0)
   {
     // Switch to old working directory
@@ -160,7 +173,7 @@ BIDEFN(cd)
       appendfilepath(r, subfilepath, strlen(subfilepath));
     }
   }
-  else
+  else if (strncmp(r->argv[1], "..", (size_t)strlen(parentDir)) == 0)
   {
     // Need to go back to the parent directory
     truncatefilepath();
@@ -181,7 +194,6 @@ BIDEFN(cd)
   // Could be a bug, chdir returns -1 on error
   if (currentWD && chdir(currentWD) == -1)
   {
-
     // What is the chdir error?
     fprintf(stderr, "Name: %d\n", errno);
     fprintf(stderr, "Error: %s\n", strerror(errno));
