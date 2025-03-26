@@ -13,6 +13,8 @@ static Command i_command(T_command t);
 static void i_pipeline(T_pipeline t, Pipeline pipeline);
 static void i_sequence(T_sequence t, Sequence sequence);
 
+static int locationofjob = 0;
+
 static Command i_command(T_command t)
 {
   if (!t)
@@ -33,15 +35,32 @@ static void i_pipeline(T_pipeline t, Pipeline pipeline)
 
   if (t->pipeline)
   {
+
+    // fprintf(stdout, "Location: %d\n", locationofjob);
+
     int pipefd[2];
     pipe(pipefd);
     // printf("%d %d %s\n", pipefd[0], pipefd[1], t->command->words->word->s);
 
     Deq processes = getprocesses(pipeline);
-    Command previous = deq_tail_ith(processes, 0);
 
-    setwritefd(current, pipefd[1]);
+    Command previous = deq_tail_ith(processes, locationofjob);
+    // fprintf(stdout, "Current size of processes %d\n", deq_len(processes));
+
+    // Command previous = deq_tail_ith(processes, 1);
+
+    // fprintf(stdout, "The current command is: %s\n", t->command->words->word->s);
+    // fprintf(stdout, "The previous command is: %s\n", getname(previous));
+
     setreadfd(previous, pipefd[0]);
+    setwritefd(current, pipefd[1]);
+
+    locationofjob++;
+  }
+  else
+  {
+    // printf("%s\n", t->command->words->word->s);
+    locationofjob = 0;
   }
 }
 
