@@ -22,6 +22,7 @@ typedef struct
   char *in;
   char *out;
   int pid;
+  int fd[2];
 } *CommandRep;
 
 #define BIARGS CommandRep r, int *eof, Jobs jobs
@@ -335,6 +336,10 @@ extern Command newCommand(T_command command)
     r->out = NULL;
   }
 
+  // Assign fd
+  r->fd[0] = STDIN_FILENO;
+  r->fd[1] = STDOUT_FILENO;
+
   // outputcommand(r);
 
   // char **test = r->argv;
@@ -360,6 +365,19 @@ static void child(CommandRep r, int fg)
     fprintf(stdout, "Child is builtin\n");
 
     return;
+  }
+
+  // Implement pipelines
+  if (r->fd[0] != 0)
+  {
+    dup2(r->fd[0], 0);
+    close(r->fd[0]);
+  }
+
+  if (r->fd[1] != 1)
+  {
+    dup2(r->fd[1], 1);
+    close(r->fd[1]);
   }
 
   // Is there an input/output redirection?
@@ -435,6 +453,8 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
     addJobs(jobs, pipeline);
   }
 
+  // printf("%d %d %s\n", r->fd[0], r->fd[1], r->file);
+
   // Forks the process because the command is not built in but is rather built into bash itself
   int pid = fork();
   if (pid == -1)
@@ -453,8 +473,19 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
   // Parent process
   // printf("Parent process (PID: %d) created child process (PID: %d)...\n", getpid(), pid);
   if (fg)
+  {
     // Wait for the child to finish
     wait(pid);
+    if (r->fd[0] != 0)
+    {
+      close(r->fd[0]);
+    }
+
+    if (r->fd[1] != 1)
+    {
+      close(r->fd[1]);
+    }
+  }
 
   // printf("Child process completed!\n");
 }
@@ -496,4 +527,16 @@ extern int getProcessID(Command command)
 {
   CommandRep r = (CommandRep)command;
   return r->pid;
+}
+
+extern void setreadfd(Command command, int fd)
+{
+  CommandRep r = (CommandRep)command;
+  r->fd[0] = fd;
+}
+
+extern void setwritefd(Command command, int fd)
+{
+  CommandRep r = (CommandRep)command;
+  r->fd[1] = fd;
 }
