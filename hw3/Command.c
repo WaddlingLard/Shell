@@ -322,7 +322,8 @@ static int builtin(BIARGS)
 }
 
 // Method that gets the args from the words via the parser
-// Returns: **char, a pointer to the pointers of all the arguments
+// @param
+// @return: **char, a pointer to the pointers of all the arguments
 // Ex: **char->*char[0]==cat->*char[1]=='log.txt'
 static char **getargs(T_words words)
 {
@@ -415,6 +416,7 @@ extern Command newCommand(T_command command)
   return r;
 }
 
+// Method that creates the child process
 static void child(CommandRep r, int fg)
 {
 
@@ -510,6 +512,7 @@ static void child(CommandRep r, int fg)
   exit(0);
 }
 
+//  Wait for the child process to finish
 extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
                         int *jobbed, int *eof, int fg)
 {
@@ -559,6 +562,7 @@ extern void execCommand(Command command, Pipeline pipeline, Jobs jobs,
   // printf("Child process completed!\n");
 }
 
+// Frees the command
 extern void freeCommand(Command command)
 {
   CommandRep r = command;
@@ -584,6 +588,7 @@ extern void freeCommand(Command command)
   // fprintf(stdout, "Command has been freed!\n");
 }
 
+// Frees the current working directory
 extern void freestateCommand()
 {
   if (currentWD)
@@ -592,18 +597,21 @@ extern void freestateCommand()
     free(oldWD);
 }
 
+// Returns the process id of the command
 extern int getProcessID(Command command)
 {
   CommandRep r = (CommandRep)command;
   return r->pid;
 }
 
+// Returns the file name of the command
 extern char *getname(Command command)
 {
   CommandRep r = (CommandRep)command;
   return r->file;
 }
 
+// Sets the read file descriptor
 extern void setreadfd(Command command, int fd)
 {
   CommandRep r = (CommandRep)command;
@@ -613,6 +621,7 @@ extern void setreadfd(Command command, int fd)
   // fprintf(stdout, "Now: %d\n", r->fd[0]);
 }
 
+// Sets the write fd
 extern void setwritefd(Command command, int fd)
 {
   CommandRep r = (CommandRep)command;
