@@ -37,6 +37,8 @@ static char *parentDir = "..";
 static char *grandparentDir = "../..";
 
 static void
+
+// Grabs the number of args and makes sure there is enough that reflects n
 builtin_args(CommandRep r, int n)
 {
   char **argv = r->argv;
@@ -46,6 +48,7 @@ builtin_args(CommandRep r, int n)
     ERROR("wrong number of arguments to builtin command"); // warn
 }
 
+// Command for exiting the shell
 BIDEFN(exit)
 {
   builtin_args(r, 0);
@@ -55,6 +58,7 @@ BIDEFN(exit)
   jobswait(jobs);
 }
 
+// Command for printing out the current working directory
 BIDEFN(pwd)
 {
   builtin_args(r, 0);
@@ -153,6 +157,7 @@ void appendfilepath(CommandRep r, char *argv, int len)
   }
 }
 
+// Command for changing the directory
 BIDEFN(cd)
 {
   builtin_args(r, 1);
@@ -285,6 +290,8 @@ BIDEFN(debug)
   fprintf(stdout, "Current working directory: %s, Old working directory: %s\n", currentWD, oldWD);
 }
 
+// A method that contains the built in commands for the shell, everything else is executed as a child process
+// Returns: int, 1 for a builtin function and 0 for not a builtin function
 static int builtin(BIARGS)
 {
   typedef struct
@@ -314,6 +321,9 @@ static int builtin(BIARGS)
   return 0;
 }
 
+// Method that gets the args from the words via the parser
+// Returns: **char, a pointer to the pointers of all the arguments
+// Ex: **char->*char[0]==cat->*char[1]=='log.txt'
 static char **getargs(T_words words)
 {
 

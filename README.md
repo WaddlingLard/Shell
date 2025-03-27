@@ -31,6 +31,8 @@ Just make sure the file structure is not disturbed and all should be good!
 
 Note: There is a regression tester that can be ran with ```make trytest```, but do note that some tests will not work because there expected output was ran on a machine that does not contain the same file path another machine would have when running the tester. Tread with caution!
 
+NOTE: The tester does not like the shared object libdeq.so, but I have run it on my system (I know how cliche) and it works! If you don't trust me you can just do each test manually to verify. I'm sorry, the tester is rather finicky.
+
 ## Results 
 
 The tests are promising and the shell works as intended. Certain tests from the regression tester won't work because they are certain to specific file paths. However, the functionality of the shell is complete and testing by hand would show that.

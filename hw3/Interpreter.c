@@ -15,6 +15,11 @@ static void i_sequence(T_sequence t, Sequence sequence);
 
 static int locationofjob = 0;
 
+/**
+ * Converts a T_command structure to a command object.
+ * @param t The T_command to convert.
+ * @return The corresponding command object, 0 if command (t) is null
+ */
 static Command i_command(T_command t)
 {
   if (!t)
@@ -25,6 +30,11 @@ static Command i_command(T_command t)
   return command;
 }
 
+/**
+ * Recursively processes a pipeline, setting up commands and pipes between them.
+ * @param t The pipeline to process.
+ * @param pipeline The pipeline object to add the commands to.
+ */
 static void i_pipeline(T_pipeline t, Pipeline pipeline)
 {
   if (!t)
@@ -64,6 +74,11 @@ static void i_pipeline(T_pipeline t, Pipeline pipeline)
   }
 }
 
+/**
+ * Processes a sequence of commands
+ * @param t The sequence of commands 
+ * @param sequence The sequence object to add the pipelines 
+ */
 static void i_sequence(T_sequence t, Sequence sequence)
 {
   if (!t)
@@ -75,6 +90,12 @@ static void i_sequence(T_sequence t, Sequence sequence)
   i_sequence(t->sequence, sequence);
 }
 
+/**
+ * Interprets the tree of commands and executes it
+ * @param t The tree structure
+ * @param eof Tracks the end of the file status
+ * @param jobs The list of jobs
+ */
 extern void interpretTree(Tree t, int *eof, Jobs jobs)
 {
   if (!t)
