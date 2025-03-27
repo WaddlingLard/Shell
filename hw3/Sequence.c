@@ -2,10 +2,15 @@
 #include "deq.h"
 #include "error.h"
 
+// Creates a new sequence (Deq) and returns it
+// Returns: Sequence, a newly created one
 extern Sequence newSequence() {
   return deq_new();
 }
 
+// 
+//
+//
 extern void addSequence(Sequence sequence, Pipeline pipeline) {
   deq_tail_put(sequence,pipeline);
 }

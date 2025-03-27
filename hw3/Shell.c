@@ -17,6 +17,7 @@ int main()
   Jobs jobs = newJobs();
   char *prompt = 0;
 
+  // Checking if stdin is open ready to take user input for the shell
   if (isatty(fileno(stdin)))
   {
     using_history();
@@ -29,6 +30,7 @@ int main()
     rl_outstream = fopen("/dev/null", "w");
   }
 
+  // This is the main loop that runs the shell, when eof=1 is when the execution stops
   while (!eof)
   {
     char *line = readline(prompt);
@@ -43,6 +45,7 @@ int main()
     freeTree(tree);
   }
 
+  // As the file channel for stdin closes, history will be written to the .history file
   if (isatty(fileno(stdin)))
   {
     write_history(".history");
@@ -52,9 +55,9 @@ int main()
   {
     fclose(rl_outstream);
   }
-  freestateCommand();
 
-  // Free the jobs!
+  // Freeing the command and jobs1
+  freestateCommand();
   freeJobs(jobs);
   return 0;
 }
