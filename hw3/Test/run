@@ -2,7 +2,7 @@
 
 prg=../../try
 
-i=0
+# i=0
 for t in Test/Test_* ; do
     cd Test
     x=${t##*/}
@@ -13,6 +13,6 @@ for t in Test/Test_* ; do
     cd "$x" || continue
     $prg <inp 2>&1 >out
     diff -q -w exp out 2>&1 >/dev/null || echo ${t##*/} failed >&2
-    ((i++))
+    # ((i++))
     cd ../..
 done

@@ -1,6 +1,10 @@
 pwd
 echo hi
 exit
+ls | grep \.c | wc
+ls | grep \.c | wc -l
+echo 1
+echo 1 ; echo 2 ; echo 3
+sleep 5 & sleep 1 & exit
 cd Test
-pwd
 exit
