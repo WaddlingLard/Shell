@@ -33,7 +33,7 @@ Note: There is a regression tester that can be ran with ```make trytest```, but 
 
 ## Results 
 
-
+The tests are promising and the shell works as intended. Certain tests from the regression tester won't work because they are certain to specific file paths. However, the functionality of the shell is complete and testing by hand would show that.
 
 ## Sources used
 
