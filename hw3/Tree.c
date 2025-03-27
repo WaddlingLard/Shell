@@ -5,6 +5,7 @@
 #include "Tree.h"
 #include "error.h"
 
+// A definition that allocates the memory for the respective element in the grammar
 #define ALLOC(t)              \
   t v = malloc(sizeof(*v));   \
   if (!v)                     \
