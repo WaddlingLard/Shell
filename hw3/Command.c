@@ -59,12 +59,11 @@ BIDEFN(pwd)
 {
   builtin_args(r, 0);
   if (!currentWD)
-    currentWD = getcwd(0, 0);
+    currentWD = strdup(getcwd(0, 0));
   printf("%s\n", currentWD);
 }
 
 // A string truncating method that snips the filepath
-// ? Has not been tested on root
 void truncatefilepath()
 {
   // Is there a current working directory?
@@ -82,6 +81,38 @@ void truncatefilepath()
   lastSlash[0] = '\0';
 }
 
+// Helper method that frees oldWD
+void freeoldwd()
+{
+  if (oldWD)
+    free(oldWD);
+  // Cleared old directory reset with the 'new' one
+  oldWD = strdup(currentWD);
+
+  free(currentWD);
+}
+
+// A method that determines in the cd path if there is a '/'
+// Returns: int, 1 for true, 0 for false
+int removeslash(CommandRep r, char *argv, int len)
+{
+  //  Look for the last file
+  int slash = '/';
+  char *lastSlash = strrchr(argv, slash);
+
+  if (lastSlash)
+  {
+
+    // Truncate the filepath
+    lastSlash[0] = '\0';
+    return 1;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 // A string appending method that adds another file to the filepath
 void appendfilepath(CommandRep r, char *argv, int len)
 {
@@ -93,21 +124,33 @@ void appendfilepath(CommandRep r, char *argv, int len)
     currentWD = getcwd(0, 0);
   }
 
-  char readyWD[strlen(currentWD) + 1];
+  // Is it not the root?
+  if (!(strlen(currentWD) == 1))
+  {
 
-  strncpy(readyWD, currentWD, strlen(currentWD));
-  readyWD[strlen(currentWD)] = '/';
-  readyWD[strlen(currentWD) + 1] = '\0';
+    removeslash(r, argv, len);
 
-  if (oldWD)
-    free(oldWD);
-  // Cleared old directory reset with the 'new' one
-  oldWD = strdup(currentWD);
+    // Handle it the normal way, add a '/'
+    char readyWD[strlen(currentWD) + 1];
+    strncpy(readyWD, currentWD, strlen(currentWD));
 
-  free(currentWD);
+    readyWD[strlen(currentWD)] = '/';
+    readyWD[strlen(currentWD) + 1] = '\0';
 
-  // Appending file onto the current path
-  currentWD = strncat(strdup(readyWD), argv, len);
+    freeoldwd();
+
+    // Appending file onto the current path
+    currentWD = strncat(strdup(readyWD), argv, len);
+  } 
+  else
+  {
+    removeslash(r, argv, len);
+
+    freeoldwd();
+
+    // Appending file onto the current path
+    currentWD = strncat(strdup(oldWD), argv, len);
+  }
 }
 
 BIDEFN(cd)
@@ -125,9 +168,8 @@ BIDEFN(cd)
     }
 
     currentWD = strdup("/");
-  }
-
-  if (strcmp(r->argv[1], "-") == 0)
+  } 
+  else if (strcmp(r->argv[1], "-") == 0)
   {
     // Switch to old working directory
 
@@ -197,6 +239,7 @@ BIDEFN(cd)
     // What is the chdir error?
     fprintf(stderr, "Name: %d\n", errno);
     fprintf(stderr, "Error: %s\n", strerror(errno));
+    fprintf(stderr, "CurrentWD: %s\n", currentWD);
 
     ERROR("chdir() failed"); // warn
   }
