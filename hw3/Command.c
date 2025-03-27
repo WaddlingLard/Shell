@@ -407,7 +407,7 @@ static void child(CommandRep r, int fg)
     if (inputfiledescriptor == -1)
     {
       // Error has occured when opening the input file
-      fprintf(stderr, "Name: %s\n", strerrorname_np(errno));
+      // fprintf(stderr, "Name: %s\n", strerrorname_np(errno));
       fprintf(stderr, "Error: %s\n", strerror(errno));
       ERROR("Opening input failed!");
     }
@@ -432,7 +432,7 @@ static void child(CommandRep r, int fg)
     if (outputfiledescriptor == -1)
     {
       // Error has occured when opening the input file
-      fprintf(stderr, "Name: %s\n", strerrorname_np(errno));
+      // fprintf(stderr, "Name: %s\n", strerrorname_np(errno));
       fprintf(stderr, "Error: %s\n", strerror(errno));
       ERROR("Opening input failed!");
     }
